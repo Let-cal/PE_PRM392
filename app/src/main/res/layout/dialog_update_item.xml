@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:gravity="center"
-            android:text="Update Student"
+            android:text="Update Item"
             android:textColor="@android:color/black"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -43,29 +43,10 @@
             android:layout_marginBottom="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_text_date_update"
+                android:id="@+id/edit_text_creator_update"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Date" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <Spinner
-            android:id="@+id/spinner_gender_update"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="56dp" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_text_email_update"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Email" />
+                android:hint="Creator" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -75,17 +56,30 @@
             android:layout_marginBottom="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_text_address_update"
+                android:id="@+id/edit_text_release_date_update"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Address" />
+                android:hint="Release Date" />
         </com.google.android.material.textfield.TextInputLayout>
 
-
-        <Spinner
-            android:id="@+id/spinner_major_update"
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_text_identifier_update"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Identifier" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Spinner
+            android:id="@+id/spinner_type_update"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:minHeight="56dp" />
 
         <LinearLayout

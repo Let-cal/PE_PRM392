@@ -1,5 +1,5 @@
 package com.example.pe_prm.ui.home;
-
+import androidx.appcompat.app.AppCompatDelegate;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.graphics.Color;
@@ -7,11 +7,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
-import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -22,37 +19,58 @@ import com.example.pe_prm.databinding.FragmentHomeBinding;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class HomeFragment extends Fragment implements StudentTableAdapter.OnItemClickListener , DialogManager.DialogCallback{
-    private FloatingActionButton fabMain, fabAddStudent, fabAddMajor;
+public class HomeFragment extends Fragment implements ItemTableAdapter.OnItemClickListener , DialogManager.DialogCallback{
+    private FloatingActionButton fabMain, fabAddItem, fabAddType,fabSwitchTheme;
     private DialogManager dialogManager;
     private boolean isFabMenuOpen = false;
     private FragmentHomeBinding binding;
-    private RecyclerView studentTable;
+    private RecyclerView itemTable;
     private TabLayout tabLayout;
-    private List<Student> allStudents;
-    private StudentTableAdapter adapter;
+    private List<Item> allItems;
+    private ItemTableAdapter adapter;
 
     private void setupFab() {
         fabMain = binding.fabMain;
-        fabAddStudent = binding.fabAddStudent;
-        fabAddMajor = binding.fabAddMajor;
+        fabAddItem = binding.fabAddItem;
+        fabAddType = binding.fabAddType;
+        fabSwitchTheme = binding.fabSwitchTheme;
+
 
         fabMain.setOnClickListener(v -> toggleFabMenu());
-        fabAddStudent.setOnClickListener(v -> {
+        fabAddItem.setOnClickListener(v -> {
             toggleFabMenu();
-            dialogManager.showAddStudentDialog(majorList);
+            dialogManager.showAddItemDialog(typeList);
         });
-        fabAddMajor.setOnClickListener(v -> {
+        fabAddType.setOnClickListener(v -> {
             toggleFabMenu();
-            dialogManager.showAddMajorDialog();
+            dialogManager.showAddTypeDialog();
         });
+        fabSwitchTheme.setOnClickListener(v -> switchTheme());
+    }
+    // Implement the switchTheme method:
+    private void switchTheme() {
+        // Check current theme and switch
+        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO); // Switch to light mode
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES); // Switch to dark mode
+        }
+        updateThemeIcon(); // Update the icon after switching
+    }
+
+    // Add a method to update the icon based on the current theme:
+    private void updateThemeIcon() {
+        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+            fabSwitchTheme.setImageResource(R.drawable.baseline_dark_mode_24); // Dark mode icon
+        } else {
+            fabSwitchTheme.setImageResource(R.drawable.baseline_light_mode_24); // Light mode icon
+        }
     }
 
     private void toggleFabMenu() {
@@ -65,17 +83,39 @@ public class HomeFragment extends Fragment implements StudentTableAdapter.OnItem
     private void openFabMenu() {
         isFabMenuOpen = true;
         fabMain.animate().rotation(45f).setDuration(300).start();
-        fabAddStudent.show();
-        fabAddMajor.show();
 
-        fabAddStudent.animate()
+        fabAddItem.show();
+        fabAddType.show();
+        fabSwitchTheme.show();
+
+        fabAddItem.animate()
                 .translationY(-getResources().getDimension(R.dimen.standard_65))
                 .setDuration(300)
                 .start();
+        binding.fabAddItemTooltip.animate() // Tooltip follows FAB
+                .translationY(-getResources().getDimension(R.dimen.standard_70))
+                .setDuration(300)
+                .withStartAction(() -> binding.fabAddItemTooltip.setVisibility(View.VISIBLE))
+                .start();
 
-        fabAddMajor.animate()
+        fabAddType.animate()
                 .translationY(-getResources().getDimension(R.dimen.standard_130))
                 .setDuration(300)
+                .start();
+        binding.fabAddTypeTooltip.animate()
+                .translationY(-getResources().getDimension(R.dimen.standard_135))
+                .setDuration(300)
+                .withStartAction(() -> binding.fabAddTypeTooltip.setVisibility(View.VISIBLE))
+                .start();
+
+        fabSwitchTheme.animate()
+                .translationY(-getResources().getDimension(R.dimen.standard_195))
+                .setDuration(300)
+                .start();
+        binding.fabSwitchThemeTooltip.animate()
+                .translationY(-getResources().getDimension(R.dimen.standard_200))
+                .setDuration(300)
+                .withStartAction(() -> binding.fabSwitchThemeTooltip.setVisibility(View.VISIBLE))
                 .start();
     }
 
@@ -83,18 +123,47 @@ public class HomeFragment extends Fragment implements StudentTableAdapter.OnItem
         isFabMenuOpen = false;
         fabMain.animate().rotation(0f).setDuration(300).start();
 
-        fabAddStudent.animate()
+        fabAddItem.animate()
                 .translationY(0f)
                 .setDuration(300)
-                .withEndAction(() -> fabAddStudent.hide())
+                .withEndAction(() -> {
+                    fabAddItem.hide();
+                    binding.fabAddItemTooltip.setVisibility(View.GONE);
+                })
+                .start();
+        binding.fabAddItemTooltip.animate()
+                .translationY(0f)
+                .setDuration(300)
                 .start();
 
-        fabAddMajor.animate()
+        fabAddType.animate()
                 .translationY(0f)
                 .setDuration(300)
-                .withEndAction(() -> fabAddMajor.hide())
+                .withEndAction(() -> {
+                    fabAddType.hide();
+                    binding.fabAddTypeTooltip.setVisibility(View.GONE);
+                })
+                .start();
+        binding.fabAddTypeTooltip.animate()
+                .translationY(0f)
+                .setDuration(300)
+                .start();
+
+        fabSwitchTheme.animate()
+                .translationY(0f)
+                .setDuration(300)
+                .withEndAction(() -> {
+                    fabSwitchTheme.hide();
+                    binding.fabSwitchThemeTooltip.setVisibility(View.GONE);
+                })
+                .start();
+        binding.fabSwitchThemeTooltip.animate()
+                .translationY(0f)
+                .setDuration(300)
                 .start();
     }
+
+
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -103,19 +172,19 @@ public class HomeFragment extends Fragment implements StudentTableAdapter.OnItem
         View root = binding.getRoot();
         dialogManager = new DialogManager(requireContext(), this);
         setupFab();
+        updateThemeIcon(); // Set initial theme icon
 
-
-        studentTable = binding.studentTable;
+        itemTable = binding.itemTable;
         tabLayout = binding.tabLayout;
 
         // Setup TabLayout with custom tabs
         setupTabLayout();
 
         // Setup RecyclerView
-        studentTable.setLayoutManager(new LinearLayoutManager(getContext()));
-        allStudents = generateDummyData(); // Method to generate dummy data
-        adapter = new StudentTableAdapter(allStudents, this);
-        studentTable.setAdapter(adapter);
+        itemTable.setLayoutManager(new LinearLayoutManager(getContext()));
+        allItems = generateDummyData(); // Method to generate dummy data
+        adapter = new ItemTableAdapter(allItems, this);
+        itemTable.setAdapter(adapter);
 
         // Setup tab listener
         setupTabListener();
@@ -124,43 +193,43 @@ public class HomeFragment extends Fragment implements StudentTableAdapter.OnItem
     }
 
     @Override
-    public void onStudentAdded(Student newStudent) {
-        allStudents.add(0, newStudent);
-        adapter.updateData(allStudents);
+    public void onItemAdded(Item newItem) {
+        allItems.add(0, newItem);
+        adapter.updateData(allItems);
     }
     @Override
     public void onShowDeleteSuccessMessage() {
-        Snackbar.make(binding.getRoot(), "Student deleted successfully", Snackbar.LENGTH_SHORT)
+        Snackbar.make(binding.getRoot(), "Item deleted successfully", Snackbar.LENGTH_SHORT)
                 .setBackgroundTint(getResources().getColor(R.color.md_theme_error, null))
                 .setTextColor(Color.WHITE)
                 .show();
     }
-    public void onDeleteStudent(Student student) {
-        // Xóa sinh viên khỏi danh sách allStudents
-        allStudents.remove(student);
+    public void onDeleteItem(Item item) {
+        // Xóa sinh viên khỏi danh sách allItems
+        allItems.remove(item);
 
         // Cập nhật adapter với danh sách mới
-        adapter.updateData(new ArrayList<>(allStudents));
+        adapter.updateData(new ArrayList<>(allItems));
     }
     @Override
-    public void onMajorAdded(Major major) {
-        Major newMajor = new Major(major.getIdMajor(), major.getNameMajor()); // Use the correct property
-        majorList.add(newMajor);
+    public void onTypeAdded(Type type) {
+        Type newType = new Type(type.getIdType(), type.getNameType()); // Use the correct property
+        typeList.add(newType);
     }
     @Override
-    public void onStudentUpdated(Student updatedStudent) {
-        // Tìm và cập nhật student trong danh sách
+    public void onItemUpdated(Item updatedItem) {
+        // Tìm và cập nhật item trong danh sách
         int index = -1;
-        for (int i = 0; i < allStudents.size(); i++) {
-            if (allStudents.get(i).getId().equals(updatedStudent.getId())) {
+        for (int i = 0; i < allItems.size(); i++) {
+            if (allItems.get(i).getId().equals(updatedItem.getId())) {
                 index = i;
                 break;
             }
         }
 
         if (index != -1) {
-            allStudents.set(index, updatedStudent);
-            adapter.updateData(allStudents);
+            allItems.set(index, updatedItem);
+            adapter.updateData(allItems);
         }
     }
 
@@ -169,9 +238,9 @@ public class HomeFragment extends Fragment implements StudentTableAdapter.OnItem
         allTab.setCustomView(createTabView("All", null)); // Replace with your icon
         tabLayout.addTab(allTab);
 
-        TabLayout.Tab majorTab = tabLayout.newTab();
-        majorTab.setCustomView(createTabView("By Major", R.drawable.baseline_arrow_drop_down_24));
-        tabLayout.addTab(majorTab);
+        TabLayout.Tab typeTab = tabLayout.newTab();
+        typeTab.setCustomView(createTabView("By Type", R.drawable.baseline_arrow_drop_down_24));
+        tabLayout.addTab(typeTab);
     }
 
     private View createTabView(String text, Integer iconResId) {
@@ -193,36 +262,38 @@ public class HomeFragment extends Fragment implements StudentTableAdapter.OnItem
     }
 
 
-    private List<String> getUniqueMajors() {
-        return allStudents.stream()
-                .map(Student::getMajor)
-                .distinct()
+    private List<String> getUniqueTypes() {
+        return typeList.stream()
+                .map(type -> type.getNameType() + " - " + type.getIdType())
                 .collect(Collectors.toList());
     }
 
-    private void showMajorSelectionDialog() {
+
+    private void showTypeSelectionDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Select Major");
+        builder.setTitle("Select Type");
 
-        List<String> majors = getUniqueMajors();
-        String[] majorArray = majors.toArray(new String[0]);
+        List<String> types = getUniqueTypes();
+        String[] typeArray = types.toArray(new String[0]);
 
-        builder.setItems(majorArray, (dialog, which) -> {
-            String selectedMajor = majorArray[which];
-            filterStudentData(selectedMajor);
+        builder.setItems(typeArray, (dialog, which) -> {
+            String selectedTypeText = typeArray[which];
+            String selectedTypeId = selectedTypeText.split(" - ")[1]; // Extract the type ID
+            filterItemData(selectedTypeId); // Filter by type ID
         });
 
         builder.show();
     }
+
 
     private void setupTabListener() {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 if (tab.getPosition() == 0) {
-                    filterStudentData(null); // Show all students
+                    filterItemData(null); // Show all item
                 } else {
-                    showMajorSelectionDialog();
+                    showTypeSelectionDialog();
                 }
             }
 
@@ -232,54 +303,54 @@ public class HomeFragment extends Fragment implements StudentTableAdapter.OnItem
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
                 if (tab.getPosition() == 1) {
-                    showMajorSelectionDialog();
+                    showTypeSelectionDialog();
                 }
             }
         });
     }
 
-    private void filterStudentData(String major) {
-        List<Student> filteredList;
-        if (major == null) {
-            filteredList = new ArrayList<>(allStudents);
+    private void filterItemData(String type) {
+        List<Item> filteredList;
+        if (type == null) {
+            filteredList = new ArrayList<>(allItems);
         } else {
-            filteredList = allStudents.stream()
-                    .filter(student -> student.getMajor().equals(major))
+            filteredList = allItems.stream()
+                    .filter(item -> item.getType().equals(type))
                     .collect(Collectors.toList());
         }
         adapter.updateData(filteredList);
     }
 
     @Override
-    public void onItemClick(Student student, View itemView) {
-        showPopupMenu(student, itemView);
+    public void onItemClick(Item item, View itemView) {
+        showPopupMenu(item, itemView);
     }
 
     @SuppressLint("NonConstantResourceId")
-    private void showPopupMenu(Student student, View anchor) {
+    private void showPopupMenu(Item item, View anchor) {
         PopupMenu popup = new PopupMenu(getContext(), anchor);
         popup.getMenuInflater().inflate(R.menu.student_actions_menu, popup.getMenu());
 
-        popup.setOnMenuItemClickListener(item -> {
-            int itemId = item.getItemId();
+        popup.setOnMenuItemClickListener(menuItem -> {
+            int itemId = menuItem.getItemId();
             if (itemId == R.id.action_update) {
-                String majorName = majorList.stream()
-                        .filter(m -> m.getIdMajor().equals(student.getIdMajor()))
+                String typeName = typeList.stream()
+                        .filter(type -> type.getIdType().equals(item.getType()))
                         .findFirst()
-                        .map(Major::getNameMajor)
+                        .map(Type::getNameType)
                         .orElse("Unknown");
-                dialogManager.showUpdateStudentDialog(student, majorList, majorName);
+                dialogManager.showUpdateItemDialog(item, typeList, typeName);
                 return true;
             } else if (itemId == R.id.action_delete) {
-                dialogManager.showDeleteConfirmationDialog(student);
+                dialogManager.showDeleteConfirmationDialog(item);
                 return true;
             } else if (itemId == R.id.action_view_details) {
-                String majorName = majorList.stream()
-                        .filter(m -> m.getIdMajor().equals(student.getIdMajor()))
+                String typeName = typeList.stream()
+                        .filter(type -> type.getIdType().equals(item.getType()))
                         .findFirst()
-                        .map(Major::getNameMajor)
+                        .map(Type::getNameType)
                         .orElse("Unknown");
-                dialogManager.showStudentDetailsDialog(student, majorName);
+                dialogManager.showItemDetailsDialog(item, typeName);
                 return true;
             }
             return false;
@@ -287,24 +358,63 @@ public class HomeFragment extends Fragment implements StudentTableAdapter.OnItem
         popup.show();
     }
 
-
-
-    private List<Major> majorList = new ArrayList<>(Arrays.asList(
-            new Major("CS", "Computer Science"),
-            new Major("BA", "Business Administration"),
-            new Major("ENG", "Engineering"),
-            new Major("IT", "Information Technology"),
-            new Major("MKT", "Marketing")
+    private List<Type> typeList = new ArrayList<>(Arrays.asList(
+            new Type("GAM", "Gaming"),
+            new Type("MUS", "Music"),
+            new Type("MOV", "Movie"),
+            new Type("BOK", "Book"),
+            new Type("SPT", "Sport")
     ));
-    private List<Student> generateDummyData() {
-        List<Student> students = new ArrayList<>();
-        students.add(new Student("SE1311", "John Doe", "CS"));
-        students.add(new Student("SE1211", "Jane Smith", "BA"));
-        students.add(new Student("SE1381", "Bob Johnson", "CS"));
-        students.add(new Student("SE1399", "Alice Brown", "ENG"));
-        students.add(new Student("SS1311", "Charlie Davis", "BA"));
-        students.add(new Student("SE1412", "Eva Wilson", "ENG"));
-        return students;
+
+    private List<Item> generateDummyData() {
+        List<Item> items = new ArrayList<>();
+        items.add(new Item(
+                "GAM001",
+                "The Legend of Zelda",
+                "Nintendo",
+                "03/03/2017",
+                "GAM",
+                "ZELDA-BOTW",
+                "GAM"
+        ));
+        items.add(new Item(
+                "MUS001",
+                "Thriller",
+                "Michael Jackson",
+                "30/11/1982",
+                "MUS",
+                "MJ-THR",
+                "MUS"
+        ));
+        items.add(new Item(
+                "MOV001",
+                "The Shawshank Redemption",
+                "Frank Darabont",
+                "14/10/1994",
+                "MOV",
+                "TSR-1994",
+                "MOV"
+        ));
+        items.add(new Item(
+                "BOK001",
+                "1984",
+                "George Orwell",
+                "08/06/1949",
+                "BOK",
+                "ORW-1984",
+                "BOK"
+        ));
+        items.add(new Item(
+                "SPT001",
+                "FIFA World Cup",
+                "FIFA",
+                "20/11/2022",
+                "SPT",
+                "WC-2022",
+                "SPT"
+        ));
+
+        return items;
     }
 
     @Override

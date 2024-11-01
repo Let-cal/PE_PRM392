@@ -1,0 +1,10 @@
+<!-- res/drawable/tooltip_background.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#333333" /> <!-- Màu nền tooltip -->
+    <corners android:radius="8dp" /> <!-- Độ cong của viền -->
+    <padding
+        android:left="8dp"
+        android:top="4dp"
+        android:right="8dp"
+        android:bottom="4dp" />
+</shape>

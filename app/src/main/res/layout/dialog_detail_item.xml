@@ -62,48 +62,28 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Major Info -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Creator Info -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                app:cardBackgroundColor="?attr/colorPrimaryContainer"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp">
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_school"
+                    app:tint="?attr/colorPrimary" />
+
+                <TextView
+                    android:id="@+id/text_creator"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="12dp">
+                    android:layout_marginStart="12dp"
+                    android:textSize="16sp" />
+            </LinearLayout>
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_school"
-                        app:tint="?attr/colorPrimary" />
-
-                    <TextView
-                        android:id="@+id/text_major"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:textColor="?attr/colorOnPrimaryContainer"
-                        android:textSize="16sp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Personal Information Section -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Personal Information"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="12dp"/>
-
-            <!-- Date of Birth -->
+            <!-- Release Date -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -117,14 +97,14 @@
                     app:tint="?attr/colorPrimary" />
 
                 <TextView
-                    android:id="@+id/text_date"
+                    android:id="@+id/text_release_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
                     android:textSize="16sp" />
             </LinearLayout>
 
-            <!-- Gender -->
+            <!-- Identifier -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -134,28 +114,18 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/ic_gender"
+                    android:src="@drawable/ic_tag"
                     app:tint="?attr/colorPrimary" />
 
                 <TextView
-                    android:id="@+id/text_gender"
+                    android:id="@+id/text_identifier"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
                     android:textSize="16sp" />
             </LinearLayout>
 
-            <!-- Contact Information Section -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Contact Information"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="12dp"/>
-
-            <!-- Email -->
+            <!-- Type -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -165,32 +135,11 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/ic_email"
+                    android:src="@drawable/ic_type"
                     app:tint="?attr/colorPrimary" />
 
                 <TextView
-                    android:id="@+id/text_email"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:textSize="16sp" />
-            </LinearLayout>
-
-            <!-- Address -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="12dp">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_location"
-                    app:tint="?attr/colorPrimary" />
-
-                <TextView
-                    android:id="@+id/text_address"
+                    android:id="@+id/text_type"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"

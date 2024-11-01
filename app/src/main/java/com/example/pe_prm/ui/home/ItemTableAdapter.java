@@ -15,21 +15,21 @@ import com.example.pe_prm.R;
 
 import java.util.List;
 
-public class StudentTableAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ItemTableAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int VIEW_TYPE_HEADER = 0;
     private static final int VIEW_TYPE_ITEM = 1;
 
-    private List<Student> students;
+    private List<Item> items;
     private OnItemClickListener listener;
     private int lastPosition = -1;
 
     public interface OnItemClickListener {
-        void onItemClick(Student student, View itemView);
+        void onItemClick(Item item, View itemView);
     }
 
-    public StudentTableAdapter(List<Student> students, OnItemClickListener listener) {
-        this.students = students;
+    public ItemTableAdapter(List<Item> items, OnItemClickListener listener) {
+        this.items = items;
         this.listener = listener;
     }
 
@@ -39,8 +39,8 @@ public class StudentTableAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public void updateData(List<Student> newStudents) {
-        this.students = newStudents;
+    public void updateData(List<Item> newItems) {
+        this.items = newItems;
         notifyDataSetChanged();
     }
 
@@ -48,10 +48,10 @@ public class StudentTableAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_HEADER) {
-            View headerView = LayoutInflater.from(parent.getContext()).inflate(R.layout.student_table_header, parent, false);
+            View headerView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_table_header, parent, false);
             return new HeaderViewHolder(headerView);
         } else {
-            View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.student_row_item, parent, false);
+            View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_row_item, parent, false);
             return new ItemViewHolder(itemView);
         }
     }
@@ -59,17 +59,16 @@ public class StudentTableAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ItemViewHolder) {
-            Student student = students.get(position - 1); // Adjust for header
+            Item item = items.get(position - 1); // Adjust for header
             ItemViewHolder itemHolder = (ItemViewHolder) holder;
-            itemHolder.mssvTextView.setText(student.getId());  // Changed from getMssv to getId
-            itemHolder.nameTextView.setText(student.getName());
-            itemHolder.majorTextView.setText(student.getIdMajor()); // Changed from getMajor to getIdMajor
+            itemHolder.idTextView.setText(item.getId());
+            itemHolder.nameTextView.setText(item.getName());
+            itemHolder.typeTextView.setText(item.getType()); // Displaying type name instead of id
 
             setAnimation(holder.itemView, position);
-            itemHolder.itemView.setOnClickListener(v -> listener.onItemClick(student, v));
+            itemHolder.itemView.setOnClickListener(v -> listener.onItemClick(item, v));
         }
     }
-
 
     private void setAnimation(View viewToAnimate, int position) {
         if (position > lastPosition) {
@@ -81,7 +80,7 @@ public class StudentTableAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public int getItemCount() {
-        return students.size() + 1; // +1 for the header
+        return items.size() + 1; // +1 for the header
     }
 
     static class HeaderViewHolder extends RecyclerView.ViewHolder {
@@ -92,15 +91,15 @@ public class StudentTableAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     static class ItemViewHolder extends RecyclerView.ViewHolder {
-        TextView mssvTextView;
+        TextView idTextView;
         TextView nameTextView;
-        TextView majorTextView;
+        TextView typeTextView;
 
         ItemViewHolder(View itemView) {
             super(itemView);
-            mssvTextView = itemView.findViewById(R.id.mssv);
+            idTextView = itemView.findViewById(R.id.idItem);
             nameTextView = itemView.findViewById(R.id.name);
-            majorTextView = itemView.findViewById(R.id.major);
+            typeTextView = itemView.findViewById(R.id.type);
         }
     }
 }

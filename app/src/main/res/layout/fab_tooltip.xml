@@ -1,0 +1,17 @@
+<!-- fab_tooltip.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/tooltip_background"
+    android:padding="8dp"
+    android:layout_marginRight="16dp">
+
+<TextView
+android:id="@+id/tooltip_text"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="Tooltip"
+android:textColor="@android:color/white"
+android:textSize="14sp" />
+    </LinearLayout>

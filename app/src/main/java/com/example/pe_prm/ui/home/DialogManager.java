@@ -1,12 +1,13 @@
 package com.example.pe_prm.ui.home;
 
-
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.text.InputType;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -19,12 +20,13 @@ import android.widget.Toast;
 
 import com.example.pe_prm.R;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -34,14 +36,10 @@ public class DialogManager {
     private final DialogCallback callback;
 
     public interface DialogCallback {
-        void onStudentAdded(Student student);  // Changed from (String name, String major)
-
-        void onMajorAdded(Major major);
-
-        void onStudentUpdated(Student updatedStudent);
-
-        void onDeleteStudent(Student deletedStudent);
-
+        void onItemAdded(Item item);
+        void onTypeAdded(Type type);
+        void onItemUpdated(Item updatedItem);
+        void onDeleteItem(Item deletedItem);
         void onShowDeleteSuccessMessage();
     }
 
@@ -50,142 +48,159 @@ public class DialogManager {
         this.callback = callback;
     }
 
-    public void showUpdateStudentDialog(Student student, List<Major> majorList, String currentMajorName) {
+    public void showUpdateItemDialog(Item item, List<Type> typeList, String currentTypeName) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
-        View dialogView = inflater.inflate(R.layout.dialog_update_student, null);
+        View dialogView = inflater.inflate(R.layout.dialog_update_item, null);
 
         TextInputEditText nameInput = dialogView.findViewById(R.id.edit_text_name_update);
-        TextInputEditText dateInput = dialogView.findViewById(R.id.edit_text_date_update);
-        TextInputEditText emailInput = dialogView.findViewById(R.id.edit_text_email_update);
-        TextInputEditText addressInput = dialogView.findViewById(R.id.edit_text_address_update);
-        Spinner genderSpinner = dialogView.findViewById(R.id.spinner_gender_update);
-        Spinner majorSpinner = dialogView.findViewById(R.id.spinner_major_update);
+        TextInputEditText creatorInput = dialogView.findViewById(R.id.edit_text_creator_update);
+        TextInputEditText releaseDateInput = dialogView.findViewById(R.id.edit_text_release_date_update);
+        TextInputEditText identifierInput = dialogView.findViewById(R.id.edit_text_identifier_update);
+        Spinner typeSpinner = dialogView.findViewById(R.id.spinner_type_update);
         MaterialButton btnCancel = dialogView.findViewById(R.id.btn_cancel_update);
         MaterialButton btnUpdate = dialogView.findViewById(R.id.btn_update);
 
-        // Thiết lập dữ liệu hiện tại
-        nameInput.setText(student.getName());
-        dateInput.setText(student.getDate());
-        emailInput.setText(student.getEmail());
-        addressInput.setText(student.getAddress());
-
-        // Setup Major Spinner
-        ArrayAdapter<String> majorAdapter = new ArrayAdapter<>(
-                context,
-                android.R.layout.simple_spinner_item,
-                majorList.stream().map(Major::getNameMajor).collect(Collectors.toList())
-        );
-        majorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        majorSpinner.setAdapter(majorAdapter);
-
-        // Set current major selection
-        int majorPosition = majorList.stream()
-                .map(Major::getNameMajor)
-                .collect(Collectors.toList())
-                .indexOf(currentMajorName);
-        if (majorPosition != -1) {
-            majorSpinner.setSelection(majorPosition);
-        }
-
-        // Setup Gender Spinner
-        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(
-                context,
-                android.R.layout.simple_spinner_item,
-                Arrays.asList("Male", "Female", "Other")
-        );
-        genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        genderSpinner.setAdapter(genderAdapter);
-
-        // Set current gender selection
-        int genderPosition = Arrays.asList("Male", "Female", "Other").indexOf(student.getGender());
-        if (genderPosition != -1) {
-            genderSpinner.setSelection(genderPosition);
-        }
-
-        AlertDialog dialog = builder.setView(dialogView).create();
-
-        // Handle button clicks
-        btnCancel.setOnClickListener(v -> dialog.dismiss());
-
-        btnUpdate.setOnClickListener(v -> {
-            if (validateInputs(nameInput, dateInput, emailInput, addressInput)) {
-                Student updatedStudent = new Student(
-                        student.getId(),
-                        nameInput.getText().toString().trim(),
-                        dateInput.getText().toString().trim(),
-                        genderSpinner.getSelectedItem().toString(),
-                        emailInput.getText().toString().trim(),
-                        addressInput.getText().toString().trim(),
-                        majorList.get(majorSpinner.getSelectedItemPosition()).getIdMajor()
-                );
-                callback.onStudentUpdated(updatedStudent);
-                dialog.dismiss();
-
-                // Show success message
-                Toast.makeText(context, "Student updated successfully", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        // Add animation
-        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
-        dialog.show();
-    }
-    public void showDeleteConfirmationDialog(Student student) {
-        Dialog dialog = new Dialog(context);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.dialog_delete_confirmation);
-
-        // Make dialog background transparent
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-        // Set dialog width to 90% of screen width
-        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-        layoutParams.copyFrom(dialog.getWindow().getAttributes());
-        layoutParams.width = (int) (context.getResources().getDisplayMetrics().widthPixels * 0.9);
-        dialog.getWindow().setAttributes(layoutParams);
-
-        // Setup buttons
-        MaterialButton btnCancel = dialog.findViewById(R.id.btn_cancel);
-        MaterialButton btnDelete = dialog.findViewById(R.id.btn_delete);
-
-        btnCancel.setOnClickListener(v -> dialog.dismiss());
-
-        btnDelete.setOnClickListener(v -> {
-            // Delete the student
-            callback.onDeleteStudent(student);
-
-            // Show success message using Toast instead of Snackbar
-            callback.onShowDeleteSuccessMessage();
-
-            dialog.dismiss();
-        });
-
-        dialog.show();
-    }
-
-    public void showAddStudentDialog(List<Major> majorList) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View dialogView = inflater.inflate(R.layout.dialog_add_student, null);
-
-        TextInputEditText idInput = dialogView.findViewById(R.id.edit_text_id);
-        TextInputEditText nameInput = dialogView.findViewById(R.id.edit_text_name);
-        TextInputEditText dateInput = dialogView.findViewById(R.id.edit_text_date);
-        TextInputEditText emailInput = dialogView.findViewById(R.id.edit_text_email);
-        TextInputEditText addressInput = dialogView.findViewById(R.id.edit_text_address);
-        Spinner genderSpinner = dialogView.findViewById(R.id.spinner_gender);
-        Spinner majorSpinner = dialogView.findViewById(R.id.spinner_major);
+        // Set current data
+        nameInput.setText(item.getName());
+        creatorInput.setText(item.getCreator());
+        releaseDateInput.setText(item.getReleaseDate());
+        identifierInput.setText(item.getIdentifier());
 
         // Setup date picker
         DatePickerDialog.OnDateSetListener dateSetListener = (view, year, month, day) -> {
             Calendar calendar = Calendar.getInstance();
             calendar.set(year, month, day);
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            dateInput.setText(dateFormat.format(calendar.getTime()));
+            releaseDateInput.setText(dateFormat.format(calendar.getTime()));
         };
 
-        dateInput.setOnClickListener(v -> {
+        // Show date picker when clicking on release date input
+        releaseDateInput.setOnClickListener(v -> {
+            Calendar calendar = Calendar.getInstance();
+            // If there's an existing date, parse it and set the calendar
+            try {
+                if (!TextUtils.isEmpty(releaseDateInput.getText())) {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                    Date date = dateFormat.parse(releaseDateInput.getText().toString());
+                    if (date != null) {
+                        calendar.setTime(date);
+                    }
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            new DatePickerDialog(context,
+                    dateSetListener,
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+            ).show();
+        });
+
+        // Disable keyboard for release date input
+        releaseDateInput.setInputType(InputType.TYPE_NULL);
+        releaseDateInput.setFocusable(false);
+
+        // Rest of your existing code...
+        // Setup Type Spinner
+        List<String> typeDisplayList = typeList.stream()
+                .map(type -> type.getNameType() + " (" + type.getIdType() + ")")
+                .collect(Collectors.toList());
+
+        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(
+                context,
+                android.R.layout.simple_spinner_item,
+                typeDisplayList
+        );
+        typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        typeSpinner.setAdapter(typeAdapter);
+
+        // Set current type selection
+        int typePosition = typeList.stream()
+                .map(Type::getIdType)
+                .collect(Collectors.toList())
+                .indexOf(item.getType());
+        if (typePosition != -1) {
+            typeSpinner.setSelection(typePosition);
+        }
+
+        AlertDialog dialog = builder.setView(dialogView).create();
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        btnUpdate.setOnClickListener(v -> {
+            if (validateInputs(nameInput, creatorInput, releaseDateInput, identifierInput)) {
+                int selectedPosition = typeSpinner.getSelectedItemPosition();
+                Type selectedType = typeList.get(selectedPosition);
+
+                Item updatedItem = new Item(
+                        item.getId(),
+                        nameInput.getText().toString().trim(),
+                        creatorInput.getText().toString().trim(),
+                        releaseDateInput.getText().toString().trim(),
+                        selectedType.getIdType(),
+                        identifierInput.getText().toString().trim(),
+                        selectedType.getIdType()
+                );
+                callback.onItemUpdated(updatedItem);
+                dialog.dismiss();
+                Toast.makeText(context, "Item updated successfully", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+        dialog.show();
+    }
+
+    public void showDeleteConfirmationDialog(Item item) {
+        Dialog dialog = new Dialog(context);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_delete_confirmation);
+
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+        layoutParams.copyFrom(dialog.getWindow().getAttributes());
+        layoutParams.width = (int) (context.getResources().getDisplayMetrics().widthPixels * 0.9);
+        dialog.getWindow().setAttributes(layoutParams);
+
+        MaterialButton btnCancel = dialog.findViewById(R.id.btn_cancel);
+        MaterialButton btnDelete = dialog.findViewById(R.id.btn_delete);
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        btnDelete.setOnClickListener(v -> {
+            callback.onDeleteItem(item);
+            callback.onShowDeleteSuccessMessage();
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    public void showAddItemDialog(List<Type> typeList) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.dialog_add_item, null);
+
+        TextInputEditText idInput = dialogView.findViewById(R.id.edit_text_id);
+        TextInputEditText nameInput = dialogView.findViewById(R.id.edit_text_name);
+        TextInputEditText creatorInput = dialogView.findViewById(R.id.edit_text_creator);
+        TextInputEditText releaseDateInput = dialogView.findViewById(R.id.edit_text_release_date);
+        TextInputEditText identifierInput = dialogView.findViewById(R.id.edit_text_identifier);
+        Spinner typeSpinner = dialogView.findViewById(R.id.spinner_type);
+
+        // Setup date picker
+        DatePickerDialog.OnDateSetListener dateSetListener = (view, year, month, day) -> {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(year, month, day);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            releaseDateInput.setText(dateFormat.format(calendar.getTime()));
+        };
+
+        releaseDateInput.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
             new DatePickerDialog(context, dateSetListener,
                     calendar.get(Calendar.YEAR),
@@ -193,25 +208,17 @@ public class DialogManager {
                     calendar.get(Calendar.DAY_OF_MONTH)).show();
         });
 
-        // Setup spinners (giữ nguyên như cũ)
-        ArrayAdapter<String> majorAdapter = new ArrayAdapter<>(
+        // Setup type spinner
+        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(
                 context,
                 android.R.layout.simple_spinner_item,
-                majorList.stream().map(Major::getNameMajor).collect(Collectors.toList())
+                typeList.stream().map(Type::getNameType).collect(Collectors.toList())
         );
-        majorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        majorSpinner.setAdapter(majorAdapter);
-
-        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(
-                context,
-                android.R.layout.simple_spinner_item,
-                Arrays.asList("Male", "Female", "Other")
-        );
-        genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        genderSpinner.setAdapter(genderAdapter);
+        typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        typeSpinner.setAdapter(typeAdapter);
 
         builder.setView(dialogView)
-                .setTitle("Add New Student")
+                .setTitle("Add New Item")
                 .setPositiveButton("Add", null)
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
 
@@ -219,19 +226,18 @@ public class DialogManager {
         dialog.setOnShowListener(dialogInterface -> {
             Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             button.setOnClickListener(view -> {
-                // Validate all inputs
-                if (validateAllInputs(idInput, nameInput, dateInput, emailInput, addressInput)) {
-                    String majorId = majorList.get(majorSpinner.getSelectedItemPosition()).getIdMajor();
-                    Student newStudent = new Student(
+                if (validateAllInputs(idInput, nameInput, creatorInput, releaseDateInput, identifierInput)) {
+                    String typeId = typeList.get(typeSpinner.getSelectedItemPosition()).getIdType();
+                    Item newItem = new Item(
                             idInput.getText().toString().trim(),
                             nameInput.getText().toString().trim(),
-                            dateInput.getText().toString().trim(),
-                            genderSpinner.getSelectedItem().toString(),
-                            emailInput.getText().toString().trim(),
-                            addressInput.getText().toString().trim(),
-                            majorId
+                            creatorInput.getText().toString().trim(),
+                            releaseDateInput.getText().toString().trim(),
+                            typeId,
+                            identifierInput.getText().toString().trim(),
+                            typeId
                     );
-                    callback.onStudentAdded(newStudent);
+                    callback.onItemAdded(newItem);
                     dialog.dismiss();
                 }
             });
@@ -239,95 +245,63 @@ public class DialogManager {
         dialog.show();
     }
 
+    public void showItemDetailsDialog(Item item, String typeName) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.dialog_detail_item, null);
+
+        TextView idText = dialogView.findViewById(R.id.text_id);
+        TextView nameText = dialogView.findViewById(R.id.text_name);
+        TextView creatorText = dialogView.findViewById(R.id.text_creator);
+        TextView releaseDateText = dialogView.findViewById(R.id.text_release_date);
+        TextView identifierText = dialogView.findViewById(R.id.text_identifier);
+        TextView typeText = dialogView.findViewById(R.id.text_type);
+        MaterialButton btnClose = dialogView.findViewById(R.id.btn_close);
+
+        idText.setText(String.format("ID: %s", item.getId()));
+        nameText.setText(String.format("%s", item.getName()));
+        creatorText.setText(String.format("Creator: %s", item.getCreator()));
+        releaseDateText.setText(String.format("Release Date: %s", item.getReleaseDate()));
+        identifierText.setText(String.format("Identifier: %s", item.getIdentifier()));
+        typeText.setText(String.format("Type: %s", typeName));
+
+        AlertDialog dialog = builder.setView(dialogView).create();
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
     private boolean validateAllInputs(TextInputEditText idInput, TextInputEditText nameInput,
-                                      TextInputEditText dateInput, TextInputEditText emailInput,
-                                      TextInputEditText addressInput) {
+                                      TextInputEditText creatorInput, TextInputEditText releaseDateInput,
+                                      TextInputEditText identifierInput) {
         boolean isValid = true;
 
-        // Validate Student ID
-        String studentId = idInput.getText().toString().trim();
-        if (studentId.isEmpty()) {
-            idInput.setError("Student ID is required");
+        if (idInput.getText().toString().trim().isEmpty()) {
+            idInput.setError("Item ID is required");
             isValid = false;
-        } else if (!studentId.matches("^(SS|SA|SI)\\d{4}$")) {
-            idInput.setError("ID must start with SS, SA, or SI followed by 4 digits");
-            isValid = false;
-        } else {
-            try {
-                int number = Integer.parseInt(studentId.substring(2));
-                if (number > 2000) {
-                    idInput.setError("Number part cannot exceed 2000");
-                    isValid = false;
-                }
-            } catch (NumberFormatException e) {
-                idInput.setError("Invalid ID format");
-                isValid = false;
-            }
         }
 
-        // Validate Name
         if (nameInput.getText().toString().trim().isEmpty()) {
             nameInput.setError("Name is required");
             isValid = false;
         }
 
-        // Validate Date
-        if (dateInput.getText().toString().trim().isEmpty()) {
-            dateInput.setError("Date of Birth is required");
+        if (creatorInput.getText().toString().trim().isEmpty()) {
+            creatorInput.setError("Creator is required");
             isValid = false;
         }
 
-        // Validate Email
-        String email = emailInput.getText().toString().trim();
-        if (email.isEmpty()) {
-            emailInput.setError("Email is required");
-            isValid = false;
-        } else if (!email.contains("@") || !email.contains(".")) {
-            emailInput.setError("Invalid email format");
+        if (releaseDateInput.getText().toString().trim().isEmpty()) {
+            releaseDateInput.setError("Release date is required");
             isValid = false;
         }
 
-        // Validate Address
-        if (addressInput.getText().toString().trim().isEmpty()) {
-            addressInput.setError("Address is required");
+        if (identifierInput.getText().toString().trim().isEmpty()) {
+            identifierInput.setError("Identifier is required");
             isValid = false;
         }
 
         return isValid;
-    }
-
-    public void showStudentDetailsDialog(Student student, String majorName) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View dialogView = inflater.inflate(R.layout.dialog_detail_student, null);
-
-        TextView idText = dialogView.findViewById(R.id.text_id);
-        TextView nameText = dialogView.findViewById(R.id.text_name);
-        TextView dateText = dialogView.findViewById(R.id.text_date);
-        TextView genderText = dialogView.findViewById(R.id.text_gender);
-        TextView emailText = dialogView.findViewById(R.id.text_email);
-        TextView addressText = dialogView.findViewById(R.id.text_address);
-        TextView majorText = dialogView.findViewById(R.id.text_major);
-        MaterialButton btnClose = dialogView.findViewById(R.id.btn_close);
-
-        idText.setText(String.format("ID: %s", student.getId()));
-        nameText.setText(String.format("Name: %s", student.getName()));
-        dateText.setText(String.format("Date: %s", student.getDate()));
-        genderText.setText(String.format("Gender: %s", student.getGender()));
-        emailText.setText(String.format("Email: %s", student.getEmail()));
-        addressText.setText(String.format("Address: %s", student.getAddress()));
-        majorText.setText(String.format("Major: %s", majorName));
-
-        AlertDialog dialog = builder.setView(dialogView).create();
-
-        // Set window animations
-        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
-
-        // Handle close button
-        btnClose.setOnClickListener(v -> dialog.dismiss());
-
-        // Show dialog
-        dialog.show();
     }
 
     private boolean validateInputs(TextInputEditText... inputs) {
@@ -341,29 +315,16 @@ public class DialogManager {
         return isValid;
     }
 
-    private String generateStudentId() {
-        // Choose a random prefix
-        String[] prefixes = {"SE", "SS", "SA"};
-        String prefix = prefixes[(int) (Math.random() * prefixes.length)];
-
-        // Generate a random number between 0 and 2000
-        int randomNumber = (int) (Math.random() * 2000);
-
-        // Format the ID as prefix + random number (zero-padded to 4 digits)
-        return prefix + String.format("%04d", randomNumber);
-    }
-
-
-    public void showAddMajorDialog() {
+    public void showAddTypeDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
-        View dialogView = inflater.inflate(R.layout.dialog_add_major, null);
+        View dialogView = inflater.inflate(R.layout.dialog_add_type, null);
 
-        TextInputEditText idInput = dialogView.findViewById(R.id.edit_text_major_id);
-        TextInputEditText nameInput = dialogView.findViewById(R.id.edit_text_major_name);
+        TextInputEditText idInput = dialogView.findViewById(R.id.edit_text_type_id);
+        TextInputEditText nameInput = dialogView.findViewById(R.id.edit_text_type_name);
 
         builder.setView(dialogView)
-                .setTitle("Add New Major")
+                .setTitle("Add New Type")
                 .setPositiveButton("Add", null)
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
 
@@ -371,22 +332,18 @@ public class DialogManager {
         dialog.setOnShowListener(dialogInterface -> {
             Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             button.setOnClickListener(view -> {
-                // Validate inputs
-                String majorId = idInput.getText().toString().trim();
-                String majorName = nameInput.getText().toString().trim();
+                String typeId = idInput.getText().toString().trim();
+                String typeName = nameInput.getText().toString().trim();
 
-                if (majorId.isEmpty() || majorName.isEmpty()) {
-                    // Show an error message if inputs are empty
+                if (typeId.isEmpty() || typeName.isEmpty()) {
                     Toast.makeText(context, "Both fields are required", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                // Add the new major
-                callback.onMajorAdded(new Major(majorId, majorName));
+                callback.onTypeAdded(new Type(typeId, typeName));
                 dialog.dismiss();
             });
         });
         dialog.show();
     }
-
 }
